@@ -21,21 +21,21 @@ public class ArrayList<E> implements List<E>{
 	}
 	
 	private void resize(){
-		int array_conpacity = array.length;
+		int array_capacity = array.length;
 		// if array's capacity is 0
 		if(Arrays.equals(array, EMPTY_ARRAY)) {
 			array = new Object[DEFAULT_CAPACITY];
 			return;
 		}
 		// 용량이 꽉 찰 경우
-		if(size == array_conpacity) {
-			int new_capacity = array_conpacity * 2;
+		if(size == array_capacity) {
+			int new_capacity = array_capacity * 2;
 			array = Arrays.copyOf(array, new_capacity);
 			return;
 		}
 		// 용적의 절반 미만으로 요소가 차지하고 있을 경우
-		if(size < (array_conpacity / 2)) {
-			int new_capacity = array_conpacity / 2;
+		if(size < (array_capacity / 2)) {
+			int new_capacity = array_capacity / 2;
 			array = Arrays.copyOf(array, Math.max(new_capacity, DEFAULT_CAPACITY));
 			return;
 		}
@@ -58,64 +58,123 @@ public class ArrayList<E> implements List<E>{
 
 	@Override
 	public void add(int index, E value) {
-		if(index > size || index < 0) {
+		if(index > size || index < 0) {		// index가 영역을 벗어날 경우 예외 발생
 			throw new IndexOutOfBoundsException();
 		}
-		
+		if(index == size) {		// 마지막 위치면 addLast 메소드 이용
+			addLast(value);
+		} else {
+			if(size == array.length) {		// 꽉차면 용적 재할당
+				resize();
+			}
+			// index 기준 뒤에 있는 모든 요소를 한칸씩 뒤로 밀기
+			for(int i = size; i > index; i--) {
+				array[i] = array[i - 1];
+			}
+			array[index] = value; 	// index 위치에 요소 할당
+			size++;
+		}
+	}
+	
+	public void addFirst(E value) {
+		add(0, value);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public E remove(int index) {
-		// TODO Auto-generated method stub
-		return null;
+		if(index >= size || index < 0) {
+			throw new IndexOutOfBoundsException();
+		}
+		E element = (E) array[index];	// 삭제할 요소를 반환하기 위해 담아둠
+		array[index] = null;
+		
+		// 삭제할 요소의 뒤에 있는 요소들을 한칸씩 앞으로
+		for(int i = index; i < size - 1; i++) {
+			array[i] = array[i + 1];
+			array[i + 1] = null;
+		}
+		size--;
+		resize();
+		return element;
 	}
 
 	@Override
 	public boolean remove(Object value) {
-		// TODO Auto-generated method stub
-		return false;
+		int index = indexOf(value);	// 요소로 index 추출
+		if(index == -1) {	// -1 요소 없음 처리
+			return false;
+		}
+		remove(index);	// index에 있는 요소 제거
+		return true;
 	}
 
+	
+	@SuppressWarnings("unchecked")
 	@Override
 	public E get(int index) {
-		// TODO Auto-generated method stub
-		return null;
+		if(index >= size || index < 0) {	// 범위 벗어나면 예외 발생
+			throw new IndexOutOfBoundsException();
+		}
+		// Object 타입에서 E 타입으로 캐스팅 후 반환
+		return (E) array[index];
 	}
 
 	@Override
 	public void set(int index, E value) {
-		// TODO Auto-generated method stub
-		
+		if(index >= size || index < 0) {
+			throw new IndexOutOfBoundsException();
+		} else {
+			array[index] = value; 	// 해당 위치의 요소를 교체
+		}
 	}
 
 	@Override
 	public boolean contains(Object value) {
-		// TODO Auto-generated method stub
-		return false;
+		if(indexOf(value) >= 0) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
 	public int indexOf(Object value) {
-		// TODO Auto-generated method stub
-		return 0;
+		int i = 0;
+		for (i = 0; i < size; i++) {
+			if(array[i].equals(value)) {
+				return i;
+			}
+		}
+		return -1;	// 일치하는 값이 없으면 -1 반환
+	}
+	public int lastIndexOf(Object value) {
+		for(int i = size - 1; i >= 0; i--) {
+			if(array[i].equals(value)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+		return size;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		return false;
+		return size == 0;	// 요소가 0개일 경우 비어있다는 의미로 true 반환
 	}
 
 	@Override
 	public void clear() {
-		// TODO Auto-generated method stub
-		
+		// 모든 공간을 null 처리 해준다
+		for(int i = 0; i < size; i++) {
+			array[i] = null;
+		}
+		size = 0;
+		resize();	// 용적공간을 반으로 줄여준다.
 	}
 
 }
